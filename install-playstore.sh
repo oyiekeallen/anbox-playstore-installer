@@ -105,18 +105,18 @@ OPENGAPPS_URL="https://github.com/opengapps/x86_64/releases/download/$OPENGAPPS_
 HOUDINI_URL="http://dl.android-x86.org/houdini/7_y/houdini.sfs"
 HOUDINI_SO="https://github.com/Rprop/libhoudini/raw/master/4.0.8.45720/system/lib/libhoudini.so"
 
-COMBINEDDIR="/var/snap/anbox/common/combined-rootfs"
-OVERLAYDIR="/var/snap/anbox/common/rootfs-overlay"
+# COMBINEDDIR="/var/snap/anbox/common/combined-rootfs"
+OVERLAYDIR="/var/lib/anbox/rootfs"
 
 
 
-if [ ! -d "$COMBINEDDIR" ]; then
-  # enable overlay fs
-  $SUDO snap set anbox rootfs-overlay.enable=true
-  $SUDO snap restart anbox.container-manager
-
-  sleep 20
-fi
+# if [ ! -d "$COMBINEDDIR" ]; then
+#   enable overlay fs
+#   $SUDO snap set anbox rootfs-overlay.enable=true
+#   $SUDO snap restart anbox.container-manager
+# 
+#   sleep 20
+# fi
 
 echo $OVERLAYDIR
 if [ ! -d "$OVERLAYDIR" ]; then
@@ -133,14 +133,20 @@ cd "$WORKDIR"
 
 if [ -d "$WORKDIR/squashfs-root" ]; then
   $SUDO rm -rf squashfs-root
+else
+  echo "[+] No previous build"
 fi
-echo "Extracting anbox android image"
+
+echo "[+] Copying anbox android img"
+
 # get image from anbox
-cp /snap/anbox/current/android.img .
+cp /var/lib/anbox/android.img .
 $SUDO $UNSQUASHFS android.img
 
 # get opengapps and install it
 cd "$WORKDIR"
+echo "[+] Getting Gapps"
+
 if [ ! -f ./$OPENGAPPS_FILE ]; then
   echo "Loading open gapps from $OPENGAPPS_URL" 
   $WGET -q --show-progress $OPENGAPPS_URL
@@ -168,11 +174,12 @@ $SUDO cp -r ./$(find opengapps -type d -name "GoogleServicesFramework")			$APPDI
 cd "$APPDIR"
 $SUDO chown -R 100000:100000 Phonesky GoogleLoginService GoogleServicesFramework PrebuiltGmsCore
 
-echo "adding lib houdini"
+# echo "adding lib houdini"
 
 # load houdini and spread it
 cd "$WORKDIR"
 if [ ! -f ./houdini.sfs ]; then
+  echo "[+] Getting houdini"
   $WGET -q --show-progress $HOUDINI_URL
   mkdir -p houdini
   $SUDO $UNSQUASHFS -f -d ./houdini ./houdini.sfs
@@ -257,6 +264,6 @@ echo "persist.sys.nativebridge=1" | $SUDO tee -a "$OVERLAYDIR/system/build.prop"
 # enable opengles
 echo "ro.opengles.version=131072" | $SUDO tee -a "$OVERLAYDIR/system/build.prop"
 
-echo "Restart anbox"
+echo "Restart anbox to test installation"
 
-$SUDO snap restart anbox.container-manager
+# $SUDO snap restart anbox.container-manager
