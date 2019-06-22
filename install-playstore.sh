@@ -44,19 +44,19 @@ fi
 
 # check if script was started with BASH
 if [ ! "$(ps -p $$ -oargs= | awk '{print $1}' | grep -E 'bash$')" ]; then
-   echo "Please use BASH to start the script!"
+   echo "[!] Please use BASH to start the script!"
 	 exit 1
 fi
 
 # check if lzip is installed
 if [ ! "$(which lzip)" ]; then
-	echo -e "lzip is not installed. Please install lzip.\nExample: sudo apt install lzip"
+	echo -e "[!] lzip is not installed. Please install lzip.\nExample: sudo apt install lzip"
 	exit 1
 fi
 
 # check if squashfs-tools are installed
 if [ ! "$(which mksquashfs)" ] || [ ! "$(which unsquashfs)" ]; then
-	echo -e "squashfs-tools is not installed. Please install squashfs-tools.\nExample: sudo apt install squashfs-tools"
+	echo -e "[!] squashfs-tools is not installed. Please install squashfs-tools.\nExample: sudo apt install squashfs-tools"
 	exit 1
 else
 	MKSQUASHFS=$(which mksquashfs)
@@ -65,7 +65,7 @@ fi
 
 # check if wget is installed
 if [ ! "$(which wget)" ]; then
-	echo -e "wget is not installed. Please install wget.\nExample: sudo apt install wget"
+	echo -e "[!] wget is not installed. Please install wget.\nExample: sudo apt install wget"
 	exit 1
 else
 	WGET=$(which wget)
@@ -73,7 +73,7 @@ fi
 
 # check if curl is installed
 if [ ! "$(which curl)" ]; then
-	echo -e "curl is not installed. Please install curl.\nExample: sudo apt install curl"
+	echo -e "[!] curl is not installed. Please install curl.\nExample: sudo apt install curl"
 	exit 1
 else
 	CURL=$(which curl)
@@ -81,7 +81,7 @@ fi
 
 # check if unzip is installed
 if [ ! "$(which unzip)" ]; then
-	echo -e "unzip is not installed. Please install unzip.\nExample: sudo apt install unzip"
+	echo -e "[!] unzip is not installed. Please install unzip.\nExample: sudo apt install unzip"
 	exit 1
 else
 	UNZIP=$(which unzip)
@@ -89,7 +89,7 @@ fi
 
 # check if tar is installed
 if [ ! "$(which tar)" ]; then
-	echo -e "tar is not installed. Please install tar.\nExample: sudo apt install tar"
+	echo -e "[!] tar is not installed. Please install tar.\nExample: sudo apt install tar"
 	exit 1
 else
 	TAR=$(which tar)
@@ -109,6 +109,11 @@ HOUDINI_SO="https://github.com/Rprop/libhoudini/raw/master/4.0.8.45720/system/li
 OVERLAYDIR="/var/lib/anbox/rootfs"
 
 
+# mount="/dev/loop0"
+# 
+# if grep -qs "$mount" /var/lib/anbox/rootfs; then
+#     fuser -cuk /dev/loop0
+# fi
 
 # if [ ! -d "$COMBINEDDIR" ]; then
 #   enable overlay fs
@@ -120,7 +125,7 @@ OVERLAYDIR="/var/lib/anbox/rootfs"
 
 echo $OVERLAYDIR
 if [ ! -d "$OVERLAYDIR" ]; then
-    echo -e "Overlay no enabled ! Please check error messages!"
+    echo -e "[!] Overlay no enabled ! Please check error messages!"
 	exit 1
 fi
 
@@ -148,12 +153,12 @@ cd "$WORKDIR"
 echo "[+] Getting Gapps"
 
 if [ ! -f ./$OPENGAPPS_FILE ]; then
-  echo "Loading open gapps from $OPENGAPPS_URL" 
+  echo "[+] Loading open gapps from $OPENGAPPS_URL" 
   $WGET -q --show-progress $OPENGAPPS_URL
   $UNZIP -d opengapps ./$OPENGAPPS_FILE
 fi
 
-echo "extracting open gapps"
+echo "[+] Extracting open gapps"
 cd ./opengapps/Core/
 for filename in *.tar.lz
 do
@@ -169,7 +174,7 @@ fi
 $SUDO cp -r ./$(find opengapps -type d -name "PrebuiltGmsCore")					$APPDIR
 $SUDO cp -r ./$(find opengapps -type d -name "GoogleLoginService")				$APPDIR
 $SUDO cp -r ./$(find opengapps -type d -name "Phonesky")						$APPDIR
-$SUDO cp -r ./$(find opengapps -type d -name "GoogleServicesFramework")			$APPDIR
+yes | $SUDO cp -rf  ./$(find opengapps -type d -name "GoogleServicesFramework")			$APPDIR
 
 cd "$APPDIR"
 $SUDO chown -R 100000:100000 Phonesky GoogleLoginService GoogleServicesFramework PrebuiltGmsCore
@@ -216,7 +221,7 @@ echo ":arm_dyn:M::\x7f\x45\x4c\x46\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x
 echo ":arm_exe:M::\x7f\x45\x4c\x46\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28::/system/bin/houdini:" | $SUDO tee -a "$OVERLAYDIR/system/etc/binfmt_misc/arm_exe"
 $SUDO chown -R 100000:100000 "$OVERLAYDIR/system/etc/binfmt_misc"
 
-echo "Modify anbox features"
+echo "[+] Modify anbox features"
 
 # add features
 C=$(cat <<-END
